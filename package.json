@@ -1,0 +1,11 @@
+{
+  "name": "neben",
+  "version": "1.0.0",
+  "description": "micro mmo server",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.17.1",
+    "ws": "^7.0.0"
+  },
+  "license": "MIT"
+}
