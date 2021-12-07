@@ -7,7 +7,7 @@ const HTTP_PORT = process.env.PORT || 3000;
 const INDEX = '/other/game_black/index.html';
 
 const server = express()
-  .use( express.static('other/game_black') )
+  .use( express.static('game') )
 //   .use( express.static('other/game_black') )
   .listen(HTTP_PORT, () => console.log(`The HTTP server is listening on ${HTTP_PORT}`));
 
