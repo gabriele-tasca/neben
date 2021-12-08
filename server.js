@@ -105,7 +105,7 @@ function OwnIdMessage(clientId) {
 
 
 // Creating a new websocket server
-const wss = new WebSocketServer.Server({ server });
+const wss = new WebSocketServer.Server({ httpsServer });
 
 // Creating connection using websocket
 wss.on("connection", ws => {
