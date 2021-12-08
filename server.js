@@ -12,7 +12,6 @@ var certificate = fs.readFileSync('game/sslcert/cert.pem', 'utf8');
 var credentials = {key: privateKey, cert: certificate};
 
 const HTTP_PORT = process.env.PORT || 3000;
-const INDEX = '/other/game_black/index.html';
 
 // const server = express()
 //   .use( express.static('game') )
@@ -27,6 +26,7 @@ httpServer.listen(8080);
 httpsServer.listen(8443);
 
 server.use( express.static('game') )
+  .listen(HTTP_PORT, () => console.log(`The HTTP server is listening on ${HTTP_PORT}`));
 
 
 
