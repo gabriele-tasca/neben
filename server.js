@@ -26,7 +26,7 @@ httpServer.listen(8080);
 httpsServer.listen(8443);
 
 server.use( express.static('game') )
-  .listen(HTTP_PORT, () => console.log(`The HTTP server is listening on ${HTTP_PORT}`));
+  .listen(HTTP_PORT, () => console.log(`The HTTP server is listening on port ${HTTP_PORT}`));
 
 
 
@@ -40,9 +40,6 @@ server.use( express.static('game') )
 // //  });
 
 
-
-// Creating a new websocket server
-const wss = new WebSocketServer.Server({ server });
 
 
 
@@ -107,6 +104,8 @@ function OwnIdMessage(clientId) {
 
 
 
+// Creating a new websocket server
+const wss = new WebSocketServer.Server({ httpsServer });
 
 // Creating connection using websocket
 wss.on("connection", ws => {
