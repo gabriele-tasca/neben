@@ -3,16 +3,30 @@ const WebSocketServer = require('ws');
 const crypto = require("crypto");
 const express=require('express');
 
+const fs = require('fs');
+const http = require('http');
+const https = require('https');
+
+var privateKey  = fs.readFileSync('game/sslcert/privkey.pem', 'utf8');
+var certificate = fs.readFileSync('game/sslcert/cert.pem', 'utf8');
+var credentials = {key: privateKey, cert: certificate};
+
 const HTTP_PORT = process.env.PORT || 3000;
 const INDEX = '/other/game_black/index.html';
 
-const server = express()
-  .use( express.static('game') )
-//   .use( express.static('other/game_black') )
-  .listen(HTTP_PORT, () => console.log(`The HTTP server is listening on ${HTTP_PORT}`));
+// const server = express()
+//   .use( express.static('game') )
+//   .listen(HTTP_PORT, () => console.log(`The HTTP server is listening on ${HTTP_PORT}`));
 
+var server = express();
 
+var httpServer = http.createServer(server);
+var httpsServer = https.createServer(credentials, server);
 
+httpServer.listen(8080);
+httpsServer.listen(8443);
+
+server.use( express.static('game') )
 
 
 
