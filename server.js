@@ -105,6 +105,7 @@ function OwnIdMessage(clientId) {
 
 
 // Creating a new websocket server
+// poggers
 const wss = new WebSocketServer.Server({ server: httpsServer });
 
 // Creating connection using websocket
