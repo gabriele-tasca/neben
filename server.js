@@ -1,25 +1,17 @@
-// Importing the required modules
 const WebSocketServer = require('ws');
 const crypto = require("crypto");
 const express=require('express');
+const Ajv = require("ajv/dist/jtd")
 
-const HTTP_PORT = process.env.PORT || 3000;
-const INDEX = '/other/game_black/index.html';
+
+// server setup
+
+const HTTP_PORT = process.env.PORT || 9080;
 
 const server = express()
   .use( express.static('game') )
-//   .use( express.static('other/game_black') )
-  .listen(HTTP_PORT, () => console.log(`The HTTP server is listening on ${HTTP_PORT}`));
+  .listen(HTTP_PORT, () => console.log(`The HTTP server is listening on port ${HTTP_PORT}`));
 
-
-
-
-
-
-// var server = express()
-//   .listen(PORT, () => console.log(`HTTP Server listening on ${PORT}`));
-
-// server.use(express.static('game'))
 
 // //ENABLE CORS
 // // server.all('/', function(req, res, next) {
@@ -29,19 +21,59 @@ const server = express()
 // //  });
 
 
-
-// Creating a new websocket server
 const wss = new WebSocketServer.Server({ server });
 
 
+const ajv = new Ajv() // options can be passed, e.g. {allErrors: true}
 
-const frame_msecs = 100
+
+// schemas for JSON messages
+
+// ajv functions:
+// compile --> JSON validation
+//          for when the message gets relayed to 
+//          others but not used here. 
+//          example: chat
+//
+// compileSerializer --> turn server object into JSON
+//          for when the server sends a message on its own volition
+//          example: NPC actions I guess. 
+//          no validation needed.
+//
+// compileParser --> turn JSON into server object
+//          for when the incoming data gets passed to some function and used here on server.
+//          example: player walking
+//          Parser also validates it, so if Parser is successful the message 
+//          can also be safely relayed to everyone else.
+
+
+// chat message - "c"
+// Validate only
+const chat_schema = { "type": "string" }
+const chat_val = ajv.compile(chat_schema) 
+
+// walk message - "w"
+// Parse only. 
+// NPCs will need Serialize. 
+const walk_schema = {
+    properties: {
+        id: {type: "int32"},
+        x: {type: "int32"},
+        y: {type: "int32"},
+    },
+}
+const walk_parse = ajv.compileParser(walk_schema)
+
+
+
+
 
 // game data
 class Player {
-    constructor(x, y) {
+    constructor(x, y, name) {
         this.x = x;
         this.y = y;
+        this.name = name;
     }
 }
 
@@ -54,9 +86,10 @@ function playerDict(id) {
     return dict;
 }
 
-function addNewPlayer(newId) {
-    let pos = randomPosition()
-    let newPlayer = new Player( pos[0], pos[1] );
+function CreateNewPlayer(newId) {
+    let pos = randomPosition();
+    let name = randomName();
+    let newPlayer = new Player( pos[0], pos[1], name );
     player_list[newId] = newPlayer;
 }
 
@@ -107,7 +140,7 @@ wss.on("connection", ws => {
     ws.send( CreateAllPlayersMessage(player_list) );
 
     // add the newfriend's player to the list and tell everyone to create him
-    addNewPlayer(clientId);
+    CreateNewPlayer(clientId);
     broadcastCreatePlayerMessage( clientId );
 
 
@@ -115,15 +148,20 @@ wss.on("connection", ws => {
     ws.on("message", data => {
         let packet = String(data);
         let code = packet.substring(0,1);
-        message = JSON.parse(packet.substring(1));
-        
+
         // modify server state
-        if (code == "w") walk(message[0], message[1], message[2]);
+        if (code == "w") {
+            let obj = walk_parse(packet.substring(1));
+            if (obj) walk(obj);
+            broadcastOpaqueData(data);
+        }
 
+        if (code == "c") {
+            if (chat_val(packet.substring(1))) broadcastOpaqueData(data);
+            console.log(packet.substring(1))
+            console.log("validated? ",chat_val(packet.substring(1)))
+        }
 
-        // for all events, simply rebroadcast the received packet 
-        // to everyone, and they'll know what to do
-        broadcastOpaqueData(data);
     });
 
 
@@ -156,9 +194,9 @@ console.log("The WebSocket server is running on port", "???");
 
 
 
-function walk(id, x, y) {
-    player_list[id].x += x
-    player_list[id].y += y
+function walk(info) {
+    player_list[info.id].x += info.x
+    player_list[info.id].y += info.y
 }
 
 
@@ -171,8 +209,13 @@ function randomId() {
 
 
 function randomPosition() {
-    let x = Math.floor(Math.random()*12);
-    let y = Math.floor(Math.random()*7);
+    let x = Math.floor(Math.random()*6);
+    let y = Math.floor(Math.random()*3);
     console.log(y);
     return [x,y]
 }
+
+function randomName() {
+    return "anon"+String(Math.floor(Math.random()*999))
+}
+
