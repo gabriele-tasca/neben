@@ -1,7 +1,7 @@
 const WebSocketServer = require('ws');
 const crypto = require("crypto");
 const express=require('express');
-const Ajv = require("ajv/dist/jtd")
+const { match } = require('assert');
 
 
 // server setup
@@ -22,50 +22,6 @@ const server = express()
 
 
 const wss = new WebSocketServer.Server({ server });
-
-
-const ajv = new Ajv() // options can be passed, e.g. {allErrors: true}
-
-
-// schemas for JSON messages
-
-// ajv functions:
-// compile --> JSON validation
-//          for when the message gets relayed to 
-//          others but not used here. 
-//          example: chat
-//
-// compileSerializer --> turn server object into JSON
-//          for when the server sends a message on its own volition
-//          example: NPC actions I guess. 
-//          no validation needed.
-//
-// compileParser --> turn JSON into server object
-//          for when the incoming data gets passed to some function and used here on server.
-//          example: player walking
-//          Parser also validates it, so if Parser is successful the message 
-//          can also be safely relayed to everyone else.
-
-
-// chat message - "c"
-// Validate only
-const chat_schema = { "type": "string" }
-const chat_val = ajv.compile(chat_schema) 
-
-// walk message - "w"
-// Parse only. 
-// NPCs will need Serialize. 
-const walk_schema = {
-    properties: {
-        id: {type: "int32"},
-        x: {type: "int32"},
-        y: {type: "int32"},
-    },
-}
-const walk_parse = ajv.compileParser(walk_schema)
-
-
-
 
 
 // game data
@@ -126,7 +82,15 @@ function OwnIdMessage(clientId) {
 }
 
 
-
+function readMessageWalk(message) {
+    try {
+        let params = JSON.parse(message)
+        if (params.length != 2) {
+            walk(params[0], params[1]);
+            broadcastOpaqueData(data);
+        }
+    } catch (error) {}
+}
 
 
 
@@ -148,13 +112,10 @@ wss.on("connection", ws => {
     ws.on("message", data => {
         let packet = String(data);
         let code = packet.substring(0,1);
+        let message = packet.substring(1)
 
         // modify server state
-        if (code == "w") {
-            let obj = walk_parse(packet.substring(1));
-            if (obj) walk(obj);
-            broadcastOpaqueData(data);
-        }
+        if (code == "w") readMessageWalk(message)
 
         if (code == "c") {
             if (chat_val(packet.substring(1))) broadcastOpaqueData(data);
@@ -193,10 +154,22 @@ console.log("The WebSocket server is running on port", "???");
 
 
 
-
-function walk(info) {
-    player_list[info.id].x += info.x
-    player_list[info.id].y += info.y
+// 0,1,2,3 is clockwise from noon (with the godot convention for y, i.e. negative north)
+function walk(id, dir) {
+    switch (dir) {
+        case 0:
+            player_list[info.id].y -= 1
+        break
+        case 1:
+            player_list[info.id].x += 1
+        break
+        case 2:
+            player_list[info.id].y -= 1
+        break
+        case 3:
+            player_list[info.id].x -= 1
+        break
+    }
 }
 
 
