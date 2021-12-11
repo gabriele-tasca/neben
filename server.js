@@ -49,7 +49,7 @@ function CreateNewPlayer(newId) {
     player_list[newId] = newPlayer;
 }
 
-function broadcastOpaqueData(data) {
+function broadcastData(data) {
     wss.clients.forEach(client => client.send(data));
 }
 
@@ -83,13 +83,11 @@ function OwnIdMessage(clientId) {
 
 
 function readMessageWalk(message) {
-    try {
-        let params = JSON.parse(message)
-        if (params.length != 2) {
-            walk(params[0], params[1]);
-            broadcastOpaqueData(data);
-        }
-    } catch (error) {}
+    let params = JSON.parse(message)
+    if (params.length == 2) {
+        walk(params[0], params[1]);
+    } else { throw Error }
+
 }
 
 
@@ -115,12 +113,19 @@ wss.on("connection", ws => {
         let message = packet.substring(1)
 
         // modify server state
-        if (code == "w") readMessageWalk(message)
+        if (code == "w") {
+            try {
+                readMessageWalk(message);
+                broadcastData(data);
+            } catch(e) {console.log(e)}
+        } 
 
         if (code == "c") {
-            if (chat_val(packet.substring(1))) broadcastOpaqueData(data);
-            console.log(packet.substring(1))
-            console.log("validated? ",chat_val(packet.substring(1)))
+            // since normally the message isn't even parsed,
+            // we don't bother validating it in any way.
+            // this time it's the clients that will have to deal with it
+            broadcastData(data);
+            console.log(Date.now())
         }
 
     });
@@ -158,18 +163,15 @@ console.log("The WebSocket server is running on port", "???");
 function walk(id, dir) {
     switch (dir) {
         case 0:
-            player_list[info.id].y -= 1
-        break
+            player_list[id].y -= 1; return;
         case 1:
-            player_list[info.id].x += 1
-        break
+            player_list[id].x += 1; return;
         case 2:
-            player_list[info.id].y -= 1
-        break
+            player_list[id].y -= 1; return;
         case 3:
-            player_list[info.id].x -= 1
-        break
+            player_list[id].x -= 1; return;
     }
+    throw Error;
 }
 
 
