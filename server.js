@@ -115,7 +115,8 @@ function OwnIdMessage(clientId) {
 
 function readMessageWalk(senderId, message) {
     let params = JSON.parse(message);
-    if (params.length == 1) {
+    if (params.length == 2) {
+        unit_priv_list[senderId].n_w_pack += 1;
         set_dir(senderId, params[0]);
     } else { throw Error }
 }
@@ -161,13 +162,11 @@ wss.on("connection", ws => {
 
         // modify server state
         if (code == "w") {
-            try {
                 // world effect
                 readMessageWalk(clientId, message);
-                // sender effect (with extra data for client-side prediction etc)
+                // reply to sender
                 ws.send( CreateWalkReply(clientId, message) );
 
-            } catch(e) {console.log(e)}
         } 
 
         if (code == "h") {
