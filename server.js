@@ -38,9 +38,9 @@ let slime_count = 0;
 
 
 function CreateNewPlayer(newId) {
-    unit_list[newId] = { type:"player", name:randomName(), speed: 25, dir: 9 };
+    unit_list[newId] = { type:"player", name:randomName(), speed: 15, dir: 9 };
     unit_pos_list[newId] = randomPosition();
-    unit_priv_list[newId] = {};
+    unit_priv_list[newId] = {n_w_pack: 0};
     broadcast(createPlayerMessage( newId ));
 }
 
@@ -131,6 +131,11 @@ function readMessageHit(senderId, message) {
     if (unit_list[targetId]["hp"] <= 0) destroyUnit(targetId);
 }
 
+function CreateWalkReply(senderId, message) {
+    let serverPos = unit_pos_list[senderId];
+    let n_w_pack = unit_priv_list[senderId].n_w_pack;
+    return "W"+JSON.stringify([serverPos, n_w_pack]);
+}
 
 
 
@@ -157,8 +162,11 @@ wss.on("connection", ws => {
         // modify server state
         if (code == "w") {
             try {
+                // world effect
                 readMessageWalk(clientId, message);
-                // broadcast(data);
+                // sender effect (with extra data for client-side prediction etc)
+                ws.send( CreateWalkReply(clientId, message) );
+
             } catch(e) {console.log(e)}
         } 
 
