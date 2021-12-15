@@ -38,8 +38,8 @@ let slime_count = 0;
 
 
 function CreateNewPlayer(newId) {
-    unit_list[newId] = { type:"player", name:randomName(), speed: 15, dir: 8 };
-    unit_pos_list[newId] = randomPosition();
+    unit_list[newId] = { type:"player", name:randomName(), speed: 25, dir: 8 };
+    unit_pos_list[newId] = [randomPosition()[0], randomPosition()[1], 0];
     unit_priv_list[newId] = {n_w_pack: 0};
     broadcast(createPlayerMessage( newId ));
 }
@@ -116,7 +116,8 @@ function OwnIdMessage(clientId) {
 function readMessageWalk(senderId, message) {
     let params = JSON.parse(message);
     if (params.length == 2) {
-        unit_priv_list[senderId].n_w_pack += 1;
+        // set n_w_pack
+        unit_pos_list[senderId][2] = params[1];
         set_dir(senderId, params[0]);
     } else { throw Error }
 }
@@ -128,14 +129,10 @@ function readMessageHit(senderId, message) {
     let targetId = params[0];
     let damage = 20;
     // CHECK that it hits, and that the target can be hit, etc
-    unit_list[targetId]["hp"] -= damage
-    if (unit_list[targetId]["hp"] <= 0) destroyUnit(targetId);
-}
-
-function CreateWalkReply(senderId, message) {
-    let serverPos = unit_pos_list[senderId];
-    let n_w_pack = unit_priv_list[senderId].n_w_pack;
-    return "W"+JSON.stringify([serverPos, n_w_pack]);
+    if (unit_list[targetId] != null) {
+        unit_list[targetId]["hp"] -= damage
+        if (unit_list[targetId]["hp"] <= 0) destroyUnit(targetId);
+    }
 }
 
 
@@ -164,9 +161,6 @@ wss.on("connection", ws => {
         if (code == "w") {
                 // world effect
                 readMessageWalk(clientId, message);
-                // reply to sender
-                ws.send( CreateWalkReply(clientId, message) );
-
         } 
 
         if (code == "h") {
