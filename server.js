@@ -250,7 +250,7 @@ function set_dir(id, dir) {
 // 0,1,2,3 is clockwise from noon (with the godot convention for y, i.e. negative north)
 function make_unit_walk(id, dir, delta) {
     var speed = unit_list[id].speed * delta /frame_ms;
-    var diag_speed = speed * 0.707106781 * delta /frame_ms;
+    var diag_speed = speed * 0.7071067811865476 * delta /frame_ms;
     switch (dir) {
         case 0:
             unit_pos_list[id][1] -= speed; return;
