@@ -224,6 +224,7 @@ setInterval( function() {
     background()
 }, 7600);
 
+let frame_ms = 1000/15;
 // frame / tick / update loop
 let oldTime = Date.now()
 function frameTick() {
@@ -231,11 +232,11 @@ function frameTick() {
     broadcast(syncAllUnitPosMessage());
     
     let delta = getFrameTime();
-    if (delta > 35) console.log("frame time:", delta);
+    if (delta > (frame_ms+2 )) console.log("frame time:", delta);
 }
 setInterval( function() {
     frameTick()
-}, 33.33);
+}, frame_ms);
 
 
 function moveUnits() {
