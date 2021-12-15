@@ -228,20 +228,21 @@ let frame_ms = 1000/15;
 // frame / tick / update loop
 let oldTime = Date.now()
 function frameTick() {
-    moveUnits();
-    broadcast(syncAllUnitPosMessage());
-    
     let delta = getFrameTime();
     if (delta > (frame_ms+2 )) console.log("frame time:", delta);
+
+    moveUnits(delta);
+    broadcast(syncAllUnitPosMessage());
+    
 }
 setInterval( function() {
     frameTick()
 }, frame_ms);
 
 
-function moveUnits() {
+function moveUnits(delta) {
     for (var id in unit_list) {
-        make_unit_walk(id, unit_list[id].dir);
+        make_unit_walk(id, unit_list[id].dir, delta);
     }
 }
 
@@ -253,9 +254,9 @@ function set_dir(id, dir) {
 
 
 // 0,1,2,3 is clockwise from noon (with the godot convention for y, i.e. negative north)
-function make_unit_walk(id, dir) {
-    var speed = unit_list[id].speed;
-    var diag_speed = speed * 0.707106781;
+function make_unit_walk(id, dir, delta) {
+    var speed = unit_list[id].speed * delta * 100;
+    var diag_speed = speed * 0.707106781 * delta * 100;
     switch (dir) {
         case 0:
             unit_pos_list[id][1] -= speed; return;
