@@ -38,7 +38,7 @@ let slime_count = 0;
 
 
 function CreateNewPlayer(newId) {
-    unit_list[newId] = { type:"player", name:randomName(), speed: 15, dir: 9 };
+    unit_list[newId] = { type:"player", name:randomName(), speed: 15, dir: 8 };
     unit_pos_list[newId] = randomPosition();
     unit_priv_list[newId] = {n_w_pack: 0};
     broadcast(createPlayerMessage( newId ));
