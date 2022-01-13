@@ -227,7 +227,7 @@ setInterval( function() {
     background()
 }, 7600);
 
-let skip = 2
+let skip = 1
 let frame_ms = 1000/(60/skip);
 // frame / tick / update loop
 let oldTime = Date.now()
