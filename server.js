@@ -99,6 +99,12 @@ function CreateAllPlayersMessage() {
 }
 
 function syncAllUnitPosMessage() {
+    // for (const u in unit_list) {
+    //     // console.log(unit_list[u])
+    //     if (unit_list[u].type == "player") {
+    //         console.log("    pos ", JSON.stringify(unit_pos_list[u]) )
+    //     }
+    // }
     return "u"+JSON.stringify(unit_pos_list);
 }
 
@@ -114,11 +120,13 @@ function OwnIdMessage(clientId) {
 
 
 function readMessageWalk(senderId, message) {
+    console.log("received ", message)
     let params = JSON.parse(message);
     if (params.length == 2) {
         // set n_w_pack
         unit_pos_list[senderId][2] = params[1];
         set_dir(senderId, params[0]);
+        make_unit_walk(senderId, params[0], 1)
     } else { throw Error }
 }
 
@@ -204,15 +212,16 @@ console.log("The WebSocket server is running on port", "???");
 
 // // background processes or whatever
 function background() {
+    // spawn slimes
     if (slime_count < 20) {
         if (slime_count < 5) {
             for (let i = 0; i < 4; i++) spawnSlime()
         }
         spawnSlime()
-        broadcast( syncAllUnitPosMessage() );
-
     }
 }
+
+
 background();
 setInterval( function() {
     background()
@@ -223,7 +232,8 @@ let frame_ms = 1000/15;
 let oldTime = Date.now()
 function frameTick() {
     let delta = getFrameTime();
-    if (delta > (frame_ms+2 )) console.log("frame time:", delta);
+    // console.log("frame time ", frame_ms);
+    // if (Math.abs(delta - frame_ms) > ( 1 )) console.log("uneven frame time:",delta," (expected ",frame_ms,")");
 
     moveUnits(delta);
     broadcast(syncAllUnitPosMessage());
@@ -236,7 +246,9 @@ setInterval( function() {
 
 function moveUnits(delta) {
     for (var id in unit_list) {
-        make_unit_walk(id, unit_list[id].dir, delta);
+        if (unit_list[id].type != "player") {
+            make_unit_walk(id, unit_list[id].dir, delta);
+        }
     }
 }
 
@@ -249,30 +261,30 @@ function set_dir(id, dir) {
 
 // 0,1,2,3 is clockwise from noon (with the godot convention for y, i.e. negative north)
 function make_unit_walk(id, dir, delta) {
-    var speed = unit_list[id].speed * delta /frame_ms;
-    var diag_speed = speed * 0.7071067811865476 * delta /frame_ms;
+    var dist = unit_list[id].speed /4
+    var diag_dist = unit_list[id].speed * 0.7071067811865476 /4
     switch (dir) {
         case 0:
-            unit_pos_list[id][1] -= speed; return;
+            unit_pos_list[id][1] -= dist; return;
         case 1:
-            unit_pos_list[id][0] += speed; return;
+            unit_pos_list[id][0] += dist; return;
         case 2:
-            unit_pos_list[id][1] += speed; return;
+            unit_pos_list[id][1] += dist; return;
         case 3:
-            unit_pos_list[id][0] -= speed; return;
+            unit_pos_list[id][0] -= dist; return;
 
         case 4:
-            unit_pos_list[id][0] += diag_speed;
-            unit_pos_list[id][1] -= diag_speed; return;
+            unit_pos_list[id][0] += diag_dist;
+            unit_pos_list[id][1] -= diag_dist; return;
         case 5:
-            unit_pos_list[id][0] += diag_speed;
-            unit_pos_list[id][1] += diag_speed; return;
+            unit_pos_list[id][0] += diag_dist;
+            unit_pos_list[id][1] += diag_dist; return;
         case 6:
-            unit_pos_list[id][0] -= diag_speed;
-            unit_pos_list[id][1] += diag_speed; return; 
+            unit_pos_list[id][0] -= diag_dist;
+            unit_pos_list[id][1] += diag_dist; return; 
         case 7:
-            unit_pos_list[id][0] -= diag_speed;
-            unit_pos_list[id][1] -= diag_speed; return; 
+            unit_pos_list[id][0] -= diag_dist;
+            unit_pos_list[id][1] -= diag_dist; return; 
     }
 }
 
