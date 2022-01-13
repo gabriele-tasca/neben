@@ -120,7 +120,6 @@ function OwnIdMessage(clientId) {
 
 
 function readMessageWalk(senderId, message) {
-    console.log("received ", message)
     let params = JSON.parse(message);
     if (params.length == 2) {
         // set n_w_pack
