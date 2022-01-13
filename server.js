@@ -227,7 +227,8 @@ setInterval( function() {
     background()
 }, 7600);
 
-let frame_ms = 1000/15;
+let skip = 2
+let frame_ms = 1000/(60/skip);
 // frame / tick / update loop
 let oldTime = Date.now()
 function frameTick() {
@@ -261,8 +262,8 @@ function set_dir(id, dir) {
 
 // 0,1,2,3 is clockwise from noon (with the godot convention for y, i.e. negative north)
 function make_unit_walk(id, dir, delta) {
-    var dist = unit_list[id].speed /4
-    var diag_dist = unit_list[id].speed * 0.7071067811865476 /4
+    var dist = unit_list[id].speed /skip
+    var diag_dist = unit_list[id].speed * 0.7071067811865476 /skip
     switch (dir) {
         case 0:
             unit_pos_list[id][1] -= dist; return;
