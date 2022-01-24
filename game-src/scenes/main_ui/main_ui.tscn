@@ -1,0 +1,76 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://scenes/main_ui/main_ui.gd" type="Script" id=1]
+
+[node name="main_ui" type="CanvasLayer"]
+script = ExtResource( 1 )
+connecting_label_path = NodePath("connection_tree/PanelContainer/HBoxContainer/ConnectingLabel")
+retry_connection_button_path = NodePath("connection_tree/PanelContainer/HBoxContainer/RetryConnectionButton")
+
+[node name="connection_tree" type="MarginContainer" parent="."]
+anchor_right = 1.0
+margin_bottom = 64.0
+custom_constants/margin_right = 300
+custom_constants/margin_top = 10
+custom_constants/margin_left = 300
+custom_constants/margin_bottom = 10
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="PanelContainer" type="PanelContainer" parent="connection_tree"]
+margin_left = 300.0
+margin_top = 10.0
+margin_right = 852.0
+margin_bottom = 54.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="connection_tree/PanelContainer"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 545.0
+margin_bottom = 37.0
+alignment = 1
+
+[node name="ConnectingLabel" type="Label" parent="connection_tree/PanelContainer/HBoxContainer"]
+margin_left = 226.0
+margin_top = 8.0
+margin_right = 312.0
+margin_bottom = 22.0
+text = "connecting ..."
+align = 1
+
+[node name="RetryConnectionButton" type="Button" parent="connection_tree/PanelContainer/HBoxContainer"]
+visible = false
+margin_left = 289.0
+margin_right = 338.0
+margin_bottom = 33.0
+text = "RETRY"
+
+[node name="options_tree" type="MarginContainer" parent="."]
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -122.0
+custom_constants/margin_right = 10
+custom_constants/margin_top = 10
+custom_constants/margin_left = 10
+custom_constants/margin_bottom = 10
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="VboxContainer" type="VBoxContainer" parent="options_tree"]
+margin_left = 10.0
+margin_top = 10.0
+margin_right = 112.0
+margin_bottom = 662.0
+custom_constants/separation = 10
+
+[node name="OptionsButton" type="Button" parent="options_tree/VboxContainer"]
+margin_right = 102.0
+margin_bottom = 20.0
+focus_mode = 0
+text = "OPTIONS"
+
+[connection signal="pressed" from="connection_tree/PanelContainer/HBoxContainer/RetryConnectionButton" to="." method="_on_RetryConnectionButton_pressed"]
+[connection signal="pressed" from="options_tree/VboxContainer/OptionsButton" to="." method="_on_OptionsButton_pressed"]
