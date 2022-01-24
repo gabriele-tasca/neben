@@ -1,6 +1,6 @@
 # Neben Online
 
-Prototype browser multiplayer game, using a websocket server in NodeJs and the Godot engine web export for the client.
+Prototype browser multiplayer game, using a websocket server in NodeJS and the Godot engine web export for the client.
 
 Client side prediction and entity interpolation are implemented to smoothly sync the positions of all players.
 
